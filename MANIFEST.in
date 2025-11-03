@@ -1,0 +1,15 @@
+# Include important files in source distribution
+include README.md
+include LICENSE
+include requirements.txt
+include .env.example
+
+# Include example scripts
+recursive-include examples *.py
+
+# Exclude development and build files
+exclude .gitignore
+exclude .env
+recursive-exclude tests *
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
