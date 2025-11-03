@@ -57,7 +57,7 @@ from .models import (
     ScanStatusResponse,
 )
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __author__ = "Garak Security"
 __license__ = "MIT"
 

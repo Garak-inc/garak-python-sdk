@@ -884,8 +884,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 📧 Email: security@getgarak.com
-- 📚 Documentation: https://docs.garaksecurity.com
+- 📧 Email: support@getgarak.com
 
 ## Links
 

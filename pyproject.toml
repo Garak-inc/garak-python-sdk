@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Garak Security", email = "security@getgarak.com"}
+    {name = "Garak Security", email = "support@getgarak.com"}
 ]
 keywords = ["security", "ai", "llm", "vulnerability", "scanning", "garak", "red-team"]
 classifiers = [

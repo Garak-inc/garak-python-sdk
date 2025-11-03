@@ -24,7 +24,7 @@ setup(
     name='garak-sdk',
     version=get_version(),
     author='Garak Security',
-    author_email='security@getgarak.com',
+    author_email='support@getgarak.com',
     description='Python client library for the Garak AI Security Platform',
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
