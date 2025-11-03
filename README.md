@@ -890,7 +890,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Links
 
 - [Garak Dashboard](https://scans.garaksecurity.com)
-- [API Documentation](https://scans.garaksecurity.com/api/docs)
 - [GitHub Repository](https://github.com/Garak-inc/garak-python-sdk)
 - [PyPI Package](https://pypi.org/project/garak-sdk/)
 
