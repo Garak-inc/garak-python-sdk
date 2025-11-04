@@ -47,12 +47,18 @@ scan = client.scans.create(
     api_keys={"OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")}
 )
 
+scan_id = scan['metadata']['scan_id']
+
 # Wait for completion
-scan = client.scans.wait_for_completion(scan.metadata.scan_id)
+scan = client.scans.wait_for_completion(scan_id)
 
 # Get results
-results = client.scans.get_results(scan.metadata.scan_id)
-print(f"Security Score: {results['security_score']}/100")
+results = client.scans.get_results(scan_id)
+
+# Calculate security score
+overall_score = results['overallMetrics']['overallScore']
+security_score = overall_score * 100
+print(f"Security Score: {security_score:.1f}/100")
 ```
 
 ## Authentication
@@ -146,8 +152,8 @@ results = client.scans.list(search="production")
 
 ```python
 def on_progress(status):
-    if status.progress:
-        print(f"Progress: {status.progress.percentage}%")
+    if status.get('progress'):
+        print(f"Progress: {status['progress']['progress_percent']}%")
 
 scan = client.scans.wait_for_completion(
     scan_id,
@@ -163,8 +169,8 @@ scan = client.scans.wait_for_completion(
 # Download a specific report
 client.reports.download(
     scan_id,
-    report_type="json",
-    output_path="./scan_report.json"
+    report_type="jsonl",
+    output_path="./scan_report.jsonl"
 )
 
 # Download all reports
@@ -283,21 +289,23 @@ jobs:
               api_keys={"OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")}
           )
 
-          print(f"Created scan: {scan.metadata.scan_id}")
+          scan_id = scan['metadata']['scan_id']
+          print(f"Created scan: {scan_id}")
 
           # Wait for completion
           scan = client.scans.wait_for_completion(
-              scan.metadata.scan_id,
+              scan_id,
               timeout=3600,
               poll_interval=10
           )
 
           # Get results
-          results = client.scans.get_results(scan.metadata.scan_id)
+          results = client.scans.get_results(scan_id)
 
           # Check threshold
           min_score = float(os.getenv("GARAK_MIN_SCORE", "80"))
-          actual_score = results.get('security_score', 0)
+          overall_score = results['overallMetrics']['overallScore']
+          actual_score = overall_score * 100
 
           print(f"\n{'='*60}")
           print(f"Security Score: {actual_score}/100")
@@ -382,15 +390,19 @@ jobs:
               }
           )
 
+          scan_id = scan['metadata']['scan_id']
+
           # Wait and get results
-          scan = client.scans.wait_for_completion(scan.metadata.scan_id)
-          results = client.scans.get_results(scan.metadata.scan_id)
+          scan = client.scans.wait_for_completion(scan_id)
+          results = client.scans.get_results(scan_id)
 
           # Save results
           with open("scan_results.json", "w") as f:
               json.dump(results, f, indent=2)
 
-          print(f"Security Score: {results.get('security_score', 'N/A')}/100")
+          overall_score = results.get('overallMetrics', {}).get('overallScore', 0)
+          security_score = overall_score * 100
+          print(f"Security Score: {security_score:.1f}/100")
           EOF
 
       - name: Upload Results
@@ -426,10 +438,14 @@ security_scan:
           api_keys={"OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")}
       )
 
-      scan = client.scans.wait_for_completion(scan.metadata.scan_id)
-      results = client.scans.get_results(scan.metadata.scan_id)
+      scan_id = scan['metadata']['scan_id']
+      scan = client.scans.wait_for_completion(scan_id)
+      results = client.scans.get_results(scan_id)
 
-      if results['security_score'] < 80:
+      overall_score = results['overallMetrics']['overallScore']
+      security_score = overall_score * 100
+
+      if security_score < 80:
           sys.exit(1)
       EOF
   artifacts:
@@ -475,11 +491,13 @@ pipeline {
                         api_keys={"OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")}
                     )
 
-                    scan = client.scans.wait_for_completion(scan.metadata.scan_id)
-                    results = client.scans.get_results(scan.metadata.scan_id)
+                    scan_id = scan['metadata']['scan_id']
+                    scan = client.scans.wait_for_completion(scan_id)
+                    results = client.scans.get_results(scan_id)
 
-                    score = results.get('security_score', 0)
-                    print(f"Security Score: {score}/100")
+                    overall_score = results.get('overallMetrics', {}).get('overallScore', 0)
+                    score = overall_score * 100
+                    print(f"Security Score: {score:.1f}/100")
 
                     if score < 80:
                         print("Security scan failed!")
@@ -524,31 +542,33 @@ scan = client.scans.create(
     api_keys={"OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")}
 )
 
-print(f"Scan created: {scan.metadata.scan_id}")
+scan_id = scan['metadata']['scan_id']
+print(f"Scan created: {scan_id}")
 print("Waiting for completion...")
 
 # Wait for completion with progress
 def on_progress(status):
-    if status.progress:
-        print(f"Progress: {status.progress.percentage}%")
+    if status.get('progress'):
+        print(f"Progress: {status['progress']['progress_percent']}%")
 
 scan = client.scans.wait_for_completion(
-    scan.metadata.scan_id,
+    scan_id,
     timeout=3600,
     poll_interval=10,
     on_progress=on_progress
 )
 
 # Get results
-results = client.scans.get_results(scan.metadata.scan_id)
+results = client.scans.get_results(scan_id)
 
 # Download reports
 print("\nDownloading reports...")
-client.reports.download_all(scan.metadata.scan_id, output_dir="./security-reports/")
+client.reports.download_all(scan_id, output_dir="./security-reports/")
 
 # Check threshold
 min_score = float(os.getenv("GARAK_MIN_SCORE", "80"))
-actual_score = results.get('security_score', 0)
+overall_score = results.get('overallMetrics', {}).get('overallScore', 0)
+actual_score = overall_score * 100
 
 print(f"\n{'='*60}")
 print(f"Security Score: {actual_score}/100")
