@@ -86,24 +86,14 @@ def main():
     print_section("STEP 3: Create Security Scan")
 
     # Configuration
-    generator = "openai"
-    model_name = "gpt-3.5-turbo"
-    probe_categories = ["dan", "toxicity"]  # Valid: dan, security, privacy, toxicity, hallucination, performance, robustness, ethics, stereotype
+    generator = "rest"
+    model_name = "https://api.example.com/v1/chat/completions"
+    probe_categories = ["dan", "toxicity"]
 
     print(f"Scan Configuration:")
     print(f"  Generator: {generator}")
     print(f"  Model: {model_name}")
     print(f"  Probe Categories: {', '.join(probe_categories)}")
-
-    # Get model-specific API key
-    generator_api_keys = {}
-    if generator == "openai":
-        openai_key = os.getenv('OPENAI_API_KEY')
-        if openai_key:
-            generator_api_keys['OPENAI_API_KEY'] = openai_key
-            print(f"  Using OpenAI API key: {openai_key[:8]}...")
-        else:
-            print("  Using free tier (no OpenAI API key provided)")
 
     # Create scan
     print("\nCreating scan...")
@@ -113,8 +103,28 @@ def main():
         probe_categories=probe_categories,
         name="End-to-End Example Scan",
         description="Example scan from SDK tutorial",
-        api_keys=generator_api_keys,
-        use_free_tier=not bool(generator_api_keys)
+        rest_config={
+            "uri": "https://api.example.com/v1/chat/completions",
+            "method": "post",
+            "req_template_json_object": {
+                "model": "gpt-4",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "$INPUT"  # Put $INPUT where your API expects the prompt
+                    }
+                ],
+                "temperature": 0.7,
+                "max_tokens": 256
+            },
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer fake-api-key-12345"  # Replace with your actual auth header
+            },
+            "response_json": True,  # Set to True if your API returns JSON
+            "response_json_field": "$.choices[0].message.content",  # JSONPath to extract the response text
+            "verify_ssl": True  # Set to False to disable SSL verification (not recommended for production)
+        }
     )
 
     scan_id = scan.metadata.scan_id

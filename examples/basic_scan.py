@@ -52,13 +52,32 @@ def main():
     print("Creating security scan...")
 
     scan = client.scans.create(
-        generator="openai",
-        model_name="gpt-3.5-turbo",
-        probe_categories=["dan", "toxicity"],  # Valid: dan, security, privacy, toxicity, hallucination, performance, robustness, ethics, stereotype
+        generator="rest",
+        model_name="https://api.example.com/v1/chat/completions",
+        probe_categories=["dan", "toxicity"],
         name="Example Security Scan",
         description="Basic scan example from SDK",
-        api_keys={
-            "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY")
+        rest_config={
+            "uri": "https://api.example.com/v1/chat/completions",
+            "method": "post",
+            "req_template_json_object": {
+                "model": "gpt-4",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "$INPUT"  # Put $INPUT where your API expects the prompt
+                    }
+                ],
+                "temperature": 0.7,
+                "max_tokens": 256
+            },
+            "headers": {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer fake-api-key-12345"  # Replace with your actual auth header
+            },
+            "response_json": True,  # Set to True if your API returns JSON
+            "response_json_field": "$.choices[0].message.content",  # JSONPath to extract the response text
+            "verify_ssl": True  # Set to False to disable SSL verification (not recommended for production)
         }
     )
 
